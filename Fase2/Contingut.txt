@@ -1,0 +1,15 @@
+Estudis fets a partir de gens en que mean(TPM)>1
+>>all_gensTPM_noversio_ZA.csv
+Estudis fets a partir de gens en que mean(TPM)>1, seleccionats per mean(TPM) i que Codifiquen Proteïnes
+>>all_gensTPM_noversio_PROTEIN_ZA.csv
+Estudis fets a partir de gens en que mean(TPM)>1, seleccionats per mean(TPM) i excloent Mitocondrials
+>>all_gensTPM_noversio_NOMITO_ZA.csv
+Estudis fets a partir de gens en que mean(TPM)>1, seleccionats per CV
+>>all_gensCV_noversio_ZA.csv
+Estudis fets a partir de gens en que mean(TPM)>1, seleccionats per CV  i que Codifiquen Proteïnes
+>>all_gensCV_noversio_PROTEIN_ZA.csv
+Estudis fets a partir de gens en que mean(TPM)>1, seleccionats per CV  i excloent Mitocondrials
+>>all_gensCV_noversio_NOMITO_ZA.csv
+
+
+

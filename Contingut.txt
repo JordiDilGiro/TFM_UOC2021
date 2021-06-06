@@ -1,0 +1,8 @@
+Fase 1
+Exploració de Dades i Preparació de Datasets
+
+Fase 2
+Objectiu1: Diferenciació de fitxers
+
+Fase 3
+Objectiu2: Anàlisi a partir de GWAS de teixits lligats a ND

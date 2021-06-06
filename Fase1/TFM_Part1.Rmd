@@ -1,0 +1,436 @@
+---
+title: "Diferències d’expressió genètica en diferents zones del cervell i la seva relació amb malalties neurodegeneratives. Exploració i Transformació de les Dades"
+
+output:
+  prettydoc::html_pretty:
+    theme: hpstr
+    highlight: github
+    toc: true
+    
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE, knitr.table.format = 'markdown')
+```
+
+```{r llibreries}
+
+invisible(utils::memory.limit(64000))
+
+library(data.table)
+library(dplyr)
+library(ggplot2)
+library(RColorBrewer)
+```
+
+Preparació de Fitxers
+
+```{r, warning=FALSE}
+
+# Document on es defineixen a quins teixits pertanyen les mostres
+teixits <- data.table(fread('D:/TFM/Datasets/GTEx_Analysis_v8_Annotations_SampleAttributesDS.txt'))
+
+# Selecciono tan sols aquells teixits que pertanyen al Cervell
+teixitsBrain <- teixits[teixits$SMTS == 'Brain',]
+
+# Construccio del data.table 'data' que contindrà tan sols la informació dels gens de totes aquelles mostres pertanyents a teixits del cervell
+dt_Brain <- data.table(fread('D:/TFM/Datasets/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct/GTEx_Analysis_2017-06-05_v8_RNASeQCv1.1.9_gene_tpm.gct', skip = 2, heade = TRUE, dec=".", select = c("Name", teixitsBrain$SAMPID)))
+
+```
+
+Construeixo una estructura transposta amb mostres de teixits, gens i identificador d'individu
+
+```{r transposta}
+data_t<-as.data.frame(t(dt_Brain[,-1]))
+colnames(data_t)<-dt_Brain$Name
+data_t<-tibble::rownames_to_column(data_t, "Name")
+data_t <- as.data.table(data_t)
+data_t <- data_t[-c(1),] 
+
+# Farem un merge entre teixitsBrain_filtrat i individus tenint en consideració el camp comú SUBJID
+
+t_teixitsBrain <- teixitsBrain %>% dplyr::select(c("SAMPID","SMTSD"))
+setkey(t_teixitsBrain,SAMPID)
+setkey(data_t,Name)
+
+# Result conté el dataset final transformat
+Result <- merge(t_teixitsBrain,data_t,by.x=c("SAMPID"),by.y=c("Name"), nomatch=0)
+
+# Creació Result
+#write.csv(Result,"D:\\TFM\\ANALISI_MODELS\\DATASETS\\Result.csv", row.names = TRUE)
+
+# Obtinc tots els teixits filtrats (Un total de 13)
+
+T_Tots <- Result
+T_Amygdala <- Result[Result$SMTSD == 'Brain - Amygdala',]   
+T_Anterior <- Result[Result$SMTSD == 'Brain - Anterior cingulate cortex (BA24)',]   
+T_Caudate <- Result[Result$SMTSD == 'Brain - Caudate (basal ganglia)',] 
+T_Cerebellar <- Result[Result$SMTSD == 'Brain - Cerebellar Hemisphere',]    
+T_Cerebellum <- Result[Result$SMTSD == 'Brain - Cerebellum',]   
+T_Cortex <- Result[Result$SMTSD == 'Brain - Cortex',]   
+T_Frontal <- Result[Result$SMTSD == 'Brain - Frontal Cortex (BA9)',]    
+T_Hippocampus <- Result[Result$SMTSD == 'Brain - Hippocampus',] 
+T_Hypothalamus <- Result[Result$SMTSD == 'Brain - Hypothalamus',]   
+T_Nucleus <- Result[Result$SMTSD == 'Brain - Nucleus accumbens (basal ganglia)',]   
+T_Putamen <- Result[Result$SMTSD == 'Brain - Putamen (basal ganglia)',] 
+T_Spinal <- Result[Result$SMTSD == 'Brain - Spinal cord (cervical c-1)',]   
+T_Subtantia <- Result[Result$SMTSD == 'Brain - Substantia nigra',]  
+
+T_Tots_z <- T_Tots
+T_Tots_z[ T_Tots_z == 0 ] <- 0.001
+
+T_Amygdala_z <- T_Amygdala
+T_Amygdala_z[ T_Amygdala_z == 0 ] <- 0.001
+
+T_Anterior_z <- T_Anterior
+T_Anterior_z[ T_Anterior_z == 0 ] <- 0.001
+
+T_Caudate_z <- T_Caudate
+T_Caudate_z[ T_Caudate_z == 0 ] <- 0.001
+
+T_Cerebellar_z <- T_Cerebellar
+T_Cerebellar_z[ T_Cerebellar_z == 0 ] <- 0.001
+
+T_Cerebellum_z <- T_Cerebellum
+T_Cerebellum_z[ T_Cerebellum_z == 0 ] <- 0.001
+
+T_Cortex_z <- T_Cortex
+T_Cortex_z[ T_Cortex_z == 0 ] <- 0.001
+
+T_Frontal_z <- T_Frontal
+T_Frontal_z[ T_Frontal_z == 0 ] <- 0.001
+
+T_Hippocampus_z <- T_Hippocampus
+T_Hippocampus_z[ T_Hippocampus_z == 0 ] <- 0.001
+
+T_Hypothalamus_z <- T_Hypothalamus
+T_Hypothalamus_z[ T_Hypothalamus_z == 0 ] <- 0.001
+
+T_Nucleus_z <- T_Nucleus
+T_Nucleus_z[ T_Nucleus_z == 0 ] <- 0.001
+
+T_Putamen_z <- T_Putamen
+T_Putamen_z[ T_Putamen_z == 0 ] <- 0.001
+
+T_Spinal_z <- T_Spinal
+T_Spinal_z[ T_Spinal_z == 0 ] <- 0.001
+
+T_Subtantia_z <- T_Subtantia
+T_Subtantia_z[ T_Subtantia_z == 0 ] <- 0.001
+```
+
+```{r histogrames_teixits}
+
+n_cols = ncol(T_Tots)  #ncols=56202
+
+# Histogrames de cadascun dels teixits
+
+hist(log2(as.matrix(T_Tots_z[,3:n_cols])), col = "gray", main="Tots els Teixits", xlab = "Tots els teixits")
+hist(log2(as.matrix(T_Amygdala_z[,3:n_cols])), col = "gray", main="Teixits Amygdala", xlab = "Amygdala")
+hist(log2(as.matrix(T_Anterior_z[,3:n_cols])), col = "gray", main="Teixits Anterior", xlab = "Anterior")
+hist(log2(as.matrix(T_Caudate_z[,3:n_cols])), col = "gray", main="Teixits Caudate", xlab = "Caudate")
+hist(log2(as.matrix(T_Cerebellar_z[,3:n_cols])), col = "gray", main="Teixits Cerebellar", xlab = "Cerebellar")
+hist(log2(as.matrix(T_Cerebellum_z[,3:n_cols])), col = "gray", main="Teixits Cerebellum", xlab = "Cerebellum")
+hist(log2(as.matrix(T_Cortex_z[,3:n_cols])), col = "gray", main="Teixits Cortex", xlab = "Cortex")
+hist(log2(as.matrix(T_Frontal_z[,3:n_cols])), col = "gray", main="Teixits Frontal", xlab = "Frontal")  
+hist(log2(as.matrix(T_Hippocampus_z[,3:n_cols])), col = "gray", main="Teixits Hippocampus", xlab = "Hippocampus")
+hist(log2(as.matrix(T_Hypothalamus_z[,3:n_cols])), col = "gray", main="Teixits Hypothalamus", xlab = "Hypothalamus")
+hist(log2(as.matrix(T_Nucleus_z[,3:n_cols])), col = "gray", main="Teixits Nucleus", xlab = "Nucleus")
+hist(log2(as.matrix(T_Putamen_z[,3:n_cols])), col = "gray", main="Teixits Putamen", xlab = "Putamen")
+hist(log2(as.matrix(T_Spinal_z[,3:n_cols])), col = "gray", main="Teixits Spinal", xlab = "Spinal")
+hist(log2(as.matrix(T_Subtantia_z[,3:n_cols])), col = "gray", main="Teixits Substantia", xlab = "Substantia")
+
+```
+
+Número de mostres per Teixit
+
+```{r, warning=FALSE}
+
+# Número de mostres per Tipus de Teixit
+prop <- table(T_Tots$SMTSD)
+knitr::kable(prop)
+
+```
+
+```{r, warning=FALSE}
+
+# Creo versio amb tots els gens del cervell RAW
+
+T_Tots_noversio <- T_Tots
+
+for ( col in 1:ncol(T_Tots_noversio)){
+    colnames(T_Tots_noversio)[col] <- substr(colnames(T_Tots_noversio)[col], 1, regexpr(".", colnames(T_Tots_noversio)[col], fixed = TRUE)-1 )
+}
+
+colnames(T_Tots_noversio)[1]<-"SAMPID"
+colnames(T_Tots_noversio)[2]<-"SMTSD"
+
+#write.csv(T_Tots_noversio,"D:\\TFM\\ANALISI_MODELS\\DATASETS\\all_gensRAW.csv", row.names = TRUE)
+
+```
+
+```{r, warning=FALSE}
+
+
+# Obtenció de Gens Significatius per Tots i cadascun dels teixits
+# El criteri de selecció seran tots aquells gens que tinguin un valor en mitjana superior a 1
+
+columnes_Tots <-  apply(as.data.frame(T_Tots[,3:56202]),2,mean)  # Aplico la function 'mean' a la Segona Dimensió (Columnes)
+df_Tots<-as.data.frame(columnes_Tots)
+df_Tots<-tibble::rownames_to_column(df_Tots, "Name")
+df_Tots<-df_Tots[df_Tots$columnes_Tots >1,]
+
+
+# Els Gens expressats ordenats ZA en Tots teixits segons mean(TPM)>1
+
+df_Tots_ord <- as.data.frame(df_Tots)
+gens_descendent_TOT <- df_Tots_ord[order(-df_Tots_ord$columnes_Tots),]
+#write.csv(df_Tots,"D:\\TFM\\ANALISI_MODELS\\DATASETS\\gens_Tots.csv", row.names = TRUE)
+
+df_Tots_detall <- T_Tots %>% dplyr::select("SAMPID", "SMTSD",  df_Tots$Name)
+#write.csv(df_Tots_detall,"D:\\TFM\\ANALISI_MODELS\\DATASETS\\gens_Tots_detall.csv", row.names = TRUE)
+
+df_tpm_ZA <- T_Tots %>% dplyr::select("SAMPID","SMTSD", gens_descendent_TOT$Name )
+#write.csv(df_tpm_ZA,"D:\\TFM\\ANALISI_MODELS\\DATASETS\\all_gensTPM_ZA.csv", row.names = TRUE)
+
+# Renombro Columnes Gens sense versió: df_tpm_ZA
+
+df_tpm_noversio_ZA <- df_tpm_ZA
+
+for ( col in 1:ncol(df_tpm_noversio_ZA)){
+    colnames(df_tpm_noversio_ZA)[col] <- substr(colnames(df_tpm_noversio_ZA)[col], 1, regexpr(".", colnames(df_tpm_noversio_ZA)[col], fixed = TRUE)-1 )
+}
+
+colnames(df_tpm_noversio_ZA)[1]<-"SAMPID"
+colnames(df_tpm_noversio_ZA)[2]<-"SMTSD"
+
+#write.csv(df_tpm_noversio_ZA,"D:\\TFM\\ANALISI_MODELS\\DATASETS\\all_gensTPM_noversio_ZA.csv", row.names = TRUE)
+
+```
+
+```{r, warning=FALSE}
+
+# Histogrames de teixits tenint en compte mean(tpm)>1
+
+hist(log2(as.matrix(df_Tots_detall[,3:17517])), col = "gray", main="Tots els Teixits mitjana(TPM)>1", xlab = "Tots els teixits mitjana(TPM)>1")
+T_Amygdala_n <- df_Tots_detall[df_Tots_detall$SMTSD == 'Brain - Amygdala',]   
+hist(log2(as.matrix(T_Amygdala_n[,3:17517])), col = "gray", main="Teixits Amygdala mitjana(TPM)>1", xlab = "Amygdala mitjana(TPM)>1")
+
+```
+
+Gràfica on s'observa la linealitat entre log mean i log variància
+
+```{r, warning=FALSE}
+
+df_Tots_detall <- T_Tots %>% dplyr::select("SAMPID", df_Tots$Name)
+
+# Gràfica on s'observa la linealitat entre log mean i log variància
+
+Tots_mean <- as.array(sapply(df_Tots_detall[,2:17516], mean))
+Tots_var <- as.array(sapply(df_Tots_detall[,2:17516], var))
+
+Tots_mean_log <- as.array(log2(Tots_mean))
+Tots_var_log <- as.array(log2(Tots_var))
+
+result_grafo = cbind(Tots_mean_log, Tots_var_log)
+
+df_result_grafo <-as.data.frame(result_grafo)
+
+p_mean_var<-ggplot(data=df_result_grafo, aes(x=Tots_mean_log, y=Tots_var_log)) + geom_point()
+
+print(p_mean_var)
+
+```
+
+Generació de diferents conjunts de dades: RAW, codificants de proteïnes i excloent mitocondrials. 
+
+Ordernats per TPM i per CV
+
+```{r, warning=FALSE}
+# obtenció indicador CV per tots els GENS
+
+# Carrego gens amb mean(TPM)>1
+
+dt_CV<-data.table(fread('D:/TFM/ANALISI_MODELS/DATASETS/all_gensTPM_ZA.csv',  heade = TRUE, dec="."))
+dt_CV$V1<-NULL
+
+# És el mateix fer:
+dt_CV=df_tpm_ZA
+
+#Calcul CV -> (desv/mean)*100
+columnes_CV_DesvEsta <-  apply(as.data.frame(dt_CV[,3:17517]),2,sd)  # Aplico la function 'sd' a la Segona Dimensió (Columnes)
+columnes_CV <-  apply(as.data.frame(dt_CV[,3:17517]),2,mean)
+
+CV = as.data.frame((columnes_CV_DesvEsta / columnes_CV)*100)
+CV<-tibble::rownames_to_column(CV, "Name")
+colnames(CV)[2]<-'CV'
+gens_descendent_TOT_CV <- CV[order(-CV$CV),]
+
+
+# Tots Gens ordenats per CV descendent
+
+df_CV_ZA <- dt_CV %>% dplyr::select("SAMPID","SMTSD",gens_descendent_TOT_CV$Name)
+#write.csv(df_CV_ZA,"D:\\TFM\\ANALISI_MODELS\\DATASETS\\all_gensCV_ZA.csv", row.names = TRUE)
+
+# Renombro Columnes Gens sense versió: df_CV_ZA
+
+df_CV_noversio_ZA <- df_CV_ZA
+
+for ( col in 1:ncol(df_CV_noversio_ZA)){
+    colnames(df_CV_noversio_ZA)[col] <- substr(colnames(df_CV_noversio_ZA)[col], 1, regexpr(".", colnames(df_CV_noversio_ZA)[col], fixed = TRUE)-1 )
+}
+
+colnames(df_CV_noversio_ZA)[1]<-"SAMPID"
+colnames(df_CV_noversio_ZA)[2]<-"SMTSD"
+
+#write.csv(df_CV_noversio_ZA,"D:\\TFM\\ANALISI_MODELS\\DATASETS\\all_gensCV_noversio_ZA.csv", row.names = TRUE)
+
+```
+
+```{r, warning=FALSE}
+
+# Gens Mitocondrials
+
+gens_mito <- data.table(fread('D:/TFM/Gens_Mitocondrials_Proteines/PROCESSAT/vw_MITOCONDRIALS_ENSEMBLE.txt', heade = TRUE))
+
+# Gens que codifiquen Proteïnes
+
+gens_proteines <- data.table(fread('D:/TFM/Gens_Mitocondrials_Proteines/PROCESSAT/vw_GENS_PROTEINES_WIKI.txt', heade = TRUE))
+gens_proteines$GEN<-NULL
+colnames(gens_proteines)[1] <- "GEN"
+
+```
+
+```{r, warning=FALSE}
+
+# PER TPM:
+
+#1. PREPARO EL FITXER AMB PROTEINES CODIFICANTS
+
+# Filtro tots els Gens Expressats i em quedo tant sols els que codifiquen Proteïnes
+
+dt_l <- data.table(fread('D:/TFM/ANALISI_MODELS/Datasets/all_gensTPM_noversio_ZA.csv', heade = TRUE, dec=".", select = c("SAMPID", "SMTSD", gens_proteines$GEN)))
+
+dt_l2 <- df_tpm_noversio_ZA [,c(names(df_tpm_noversio_ZA) %in% gens_proteines$GEN), with=FALSE]
+dt_l2 <- cbind(df_tpm_noversio_ZA$SAMPID,df_tpm_noversio_ZA$SMTSD,dt_l2)
+colnames(dt_l2)[1]<-"SAMPID"
+colnames(dt_l2)[2]<-"SMTSD"
+
+# Cal reordenar per Gens més expressats
+# Reordeno:
+
+ind_ordre <-  apply(as.data.frame(dt_l[,3:13961]),2,mean)  # Aplico la function 'mean' a la Segona Dimensió (Columnes)
+df_Ord <-as.data.frame(ind_ordre)
+df_Ord <-tibble::rownames_to_column(df_Ord, "Name")
+df_Ord <- as.data.frame(df_Ord)
+df_descendent <- df_Ord[order(-df_Ord$ind_ordre),]
+dt_l_ord <- as.data.table(dt_l %>% dplyr::select("SAMPID","SMTSD",df_descendent$Name))
+
+ind_ordre <-  apply(as.data.frame(dt_l2[,3:13961]),2,mean)  # Aplico la function 'mean' a la Segona Dimensió (Columnes)
+df_Ord <-as.data.frame(ind_ordre)
+df_Ord <-tibble::rownames_to_column(df_Ord, "Name")
+df_Ord <- as.data.frame(df_Ord)
+df_descendent <- df_Ord[order(-df_Ord$ind_ordre),]
+dt_l2_ord <- as.data.table(dt_l2 %>% dplyr::select("SAMPID","SMTSD",df_descendent$Name))
+
+#write.csv(dt_l_ord,"D:\\TFM\\ANALISI_MODELS\\DATASETS\\all_gensTPM_noversio_PROTEIN_ZA.csv", row.names = TRUE)
+
+#2. PREPARO EL FITXER SENSE MITOCONDRIALS
+
+# No tinc en consideració gens Mitocondrials
+
+dt_ml <- data.table(fread('D:/TFM/ANALISI_MODELS/Datasets/all_gensTPM_noversio_ZA.csv', heade = TRUE, dec=".", drop = c(gens_mito$GEN)))
+dt_ml$V1<-NULL
+
+dt_ml2 <- df_tpm_noversio_ZA [,-c(names(df_tpm_noversio_ZA) %in% gens_mito$GEN), with=FALSE]
+
+# Cal reordenar per Gens més expressats
+# Reordeno:
+
+ind_ordre <-  apply(as.data.frame(dt_ml[,3:17480]),2,mean)  # Aplico la function 'mean' a la Segona Dimensió (Columnes)
+df_Ord <-as.data.frame(ind_ordre)
+df_Ord <-tibble::rownames_to_column(df_Ord, "Name")
+df_Ord <- as.data.frame(df_Ord)
+df_descendent <- df_Ord[order(-df_Ord$ind_ordre),]
+dt_ml_ord <- as.data.table(dt_ml %>% dplyr::select("SAMPID","SMTSD",df_descendent$Name))
+
+ind_ordre <-  apply(as.data.frame(dt_ml2[,3:17480]),2,mean)  # Aplico la function 'mean' a la Segona Dimensió (Columnes)
+df_Ord <-as.data.frame(ind_ordre)
+df_Ord <-tibble::rownames_to_column(df_Ord, "Name")
+df_Ord <- as.data.frame(df_Ord)
+df_descendent <- df_Ord[order(-df_Ord$ind_ordre),]
+dt_ml2_ord <- as.data.table(dt_ml2 %>% dplyr::select("SAMPID","SMTSD",df_descendent$Name))
+
+#write.csv(dt_ml_ord,"D:\\TFM\\ANALISI_MODELS\\DATASETS\\all_gensTPM_noversio_NOMITO_ZA.csv", row.names = TRUE)
+
+```
+
+
+```{r, warning=FALSE}
+
+# PER CV:
+
+#1. PREPARO EL FITXER AMB PROTEINES CODIFICANTS
+
+# Filtro tots els Gens Expressats i em quedo tant sols els que codifiquen Proteïnes
+
+dt_l <- data.table(fread('D:/TFM/ANALISI_MODELS/Datasets/all_gensCV_noversio_ZA.csv', heade = TRUE, dec=".", select = c("SAMPID", "SMTSD", gens_proteines$GEN)))
+
+dt_l2 <- df_CV_noversio_ZA [,c(names(df_CV_noversio_ZA) %in% gens_proteines$GEN), with=FALSE]
+dt_l2 <- cbind(df_CV_noversio_ZA$SAMPID,df_CV_noversio_ZA$SMTSD,dt_l2)
+colnames(dt_l2)[1]<-"SAMPID"
+colnames(dt_l2)[2]<-"SMTSD"
+
+# Cal reordenar per Gens més expressats
+# Reordeno:
+
+# Càlcul CV -> (desv/mean)*100
+
+columnes_Tots_DesvEsta <-  apply(as.data.frame(dt_l[,3:13961]),2,sd)  # Aplico la function 'sd' a la Segona Dimensió (Columnes)
+ind_ordre <-  apply(as.data.frame(dt_l[,3:13961]),2,mean)  # Aplico la function 'mean' a la Segona Dimensió (Columnes)
+CV = as.data.frame((columnes_Tots_DesvEsta / ind_ordre)*100)
+CV<-tibble::rownames_to_column(CV, "Name")
+colnames(CV)[2]<-'CV'
+df_descendent <- CV[order(-CV$CV),]
+dt_l_ord <- as.data.table(dt_l %>% dplyr::select("SAMPID","SMTSD",df_descendent$Name))
+
+columnes_Tots_DesvEsta <-  apply(as.data.frame(dt_l2[,3:13961]),2,sd)  # Aplico la function 'sd' a la Segona Dimensió (Columnes)
+ind_ordre <-  apply(as.data.frame(dt_l2[,3:13961]),2,mean)  # Aplico la function 'mean' a la Segona Dimensió (Columnes)
+CV = as.data.frame((columnes_Tots_DesvEsta / ind_ordre)*100)
+CV<-tibble::rownames_to_column(CV, "Name")
+colnames(CV)[2]<-'CV'
+df_descendent <- CV[order(-CV$CV),]
+dt_l2_ord <- as.data.table(dt_l2 %>% dplyr::select("SAMPID","SMTSD",df_descendent$Name))
+
+#write.csv(dt_l_ord,"D:\\TFM\\ANALISI_MODELS\\DATASETS\\all_gensCV_noversio_PROTEIN_ZA.csv", row.names = TRUE)
+
+# 2. PREPARO EL FITXER SENSE MITOCONDRIALS
+
+# No tinc en consideració gens Mitocondrials
+
+dt_ml <- data.table(fread('D:/TFM/ANALISI_MODELS/Datasets/all_gensCV_noversio_ZA.csv', heade = TRUE, dec=".", drop = c(gens_mito$GEN)))
+dt_ml$V1<-NULL
+
+dt_ml2 <- df_CV_noversio_ZA [,-c(names(df_CV_noversio_ZA) %in% gens_mito$GEN), with=FALSE]
+
+# Cal reordenar per Gens més expressats
+# Reordeno:
+
+ind_ordre <-  apply(as.data.frame(dt_ml[,3:17480]),2,mean)  # Aplico la function 'mean' a la Segona Dimensió (Columnes)
+df_Ord <-as.data.frame(ind_ordre)
+df_Ord <-tibble::rownames_to_column(df_Ord, "Name")
+df_Ord <- as.data.frame(df_Ord)
+df_descendent <- df_Ord[order(-df_Ord$ind_ordre),]
+dt_ml_ord <- as.data.table(dt_ml %>% dplyr::select("SAMPID","SMTSD",df_descendent$Name))
+
+ind_ordre <-  apply(as.data.frame(dt_ml2[,3:17480]),2,mean)  # Aplico la function 'mean' a la Segona Dimensió (Columnes)
+df_Ord <-as.data.frame(ind_ordre)
+df_Ord <-tibble::rownames_to_column(df_Ord, "Name")
+df_Ord <- as.data.frame(df_Ord)
+df_descendent <- df_Ord[order(-df_Ord$ind_ordre),]
+dt_ml2_ord <- as.data.table(dt_ml2 %>% dplyr::select("SAMPID","SMTSD",df_descendent$Name))
+
+#write.csv(dt_ml_ord,"D:\\TFM\\ANALISI_MODELS\\DATASETS\\all_gensCV_noversio_NOMITO_ZA.csv", row.names = TRUE)
+
+```
