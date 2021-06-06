@@ -1,6 +1,6 @@
 Carpeta: 1_TPM_RAW
 Estudis fets a partir de gens en que mean(TPM)>1
-
+ 
 Carpeta: 2_TPM_RAW_PROTEINES
 Estudis fets a partir de gens en que mean(TPM)>1, seleccionats per mean(TPM) i que Codifiquen Proteïnes
 

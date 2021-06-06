@@ -3,7 +3,7 @@ Memoria_JordiDil.pdf  (Memòria del treball)
 Fase 1
   Codi i Resultats relacionats amb:
   Exploració de Dades i Preparació de Datasets
-
+ 
 Fase 2
   Codi i Resultats relacionats amb:
   Objectiu1: Diferenciació de fitxers. Realització de clústers.
