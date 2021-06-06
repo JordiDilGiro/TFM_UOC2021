@@ -1,0 +1,4 @@
+A la carpeta Fitxers tenim:
+
+vw_GENS_PROTEINES_WIKI.txt -> Relació de gens que codifiquen proteïnes
+vw_MITOCONDRIALS_ENSEMBLE.txt -> Relació de gens mitocondrials

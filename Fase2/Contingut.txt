@@ -1,15 +1,25 @@
+Carpeta: 1_TPM_RAW
 Estudis fets a partir de gens en que mean(TPM)>1
->>all_gensTPM_noversio_ZA.csv
+
+Carpeta: 2_TPM_RAW_PROTEINES
 Estudis fets a partir de gens en que mean(TPM)>1, seleccionats per mean(TPM) i que Codifiquen Proteïnes
->>all_gensTPM_noversio_PROTEIN_ZA.csv
+
+Carpeta: 3_TPM_RAW_NO_MITO
 Estudis fets a partir de gens en que mean(TPM)>1, seleccionats per mean(TPM) i excloent Mitocondrials
 >>all_gensTPM_noversio_NOMITO_ZA.csv
+
+Carpeta: 4_CV_RAW
 Estudis fets a partir de gens en que mean(TPM)>1, seleccionats per CV
->>all_gensCV_noversio_ZA.csv
+
+Carpeta: 5_CV_PROTEINES
 Estudis fets a partir de gens en que mean(TPM)>1, seleccionats per CV  i que Codifiquen Proteïnes
->>all_gensCV_noversio_PROTEIN_ZA.csv
+
+Carpeta: 6_CV_NO_MITO
 Estudis fets a partir de gens en que mean(TPM)>1, seleccionats per CV  i excloent Mitocondrials
->>all_gensCV_noversio_NOMITO_ZA.csv
 
 
+Resultats_Models.xlsx >> Comparativa de resultats obtinguts amb els diferents models, datasets i número de gens.
 
+Fitxers Exemple: 
+	TFM_PART2_TPM-RAW1000.ipynb
+	TFM_PART2_TPM-RAW1000.html
