@@ -1,8 +1,13 @@
+Memoria_JordiDil.pdf  (Memòria del treball)
+
 Fase 1
-Exploració de Dades i Preparació de Datasets
+  Codi i Resultats relacionats amb:
+  Exploració de Dades i Preparació de Datasets
 
 Fase 2
-Objectiu1: Diferenciació de fitxers. Realització de clústers.
+  Codi i Resultats relacionats amb:
+  Objectiu1: Diferenciació de fitxers. Realització de clústers.
 
 Fase 3
-Objectiu2: Anàlisi a partir de GWAS de teixits lligats a ND. Resultats de sobre expressió.
+  Codi i Resultats relacionats amb:
+  Objectiu2: Anàlisi a partir de GWAS de teixits lligats a ND. Resultats de sobre expressió.
